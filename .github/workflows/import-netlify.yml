@@ -1,0 +1,33 @@
+name: Import live Maths Words Lab from Netlify
+on:
+  push:
+    branches:
+      - migrate-maths-words-lab-github-pages
+    paths:
+      - .github/workflows/import-netlify.yml
+
+permissions:
+  contents: write
+
+jobs:
+  import-live-page:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: migrate-maths-words-lab-github-pages
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Download the exact published application
+        run: node scripts/import-live-netlify.mjs
+      - name: Commit migrated website into the migration branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && { echo "Live source already imported"; exit 0; }
+          git commit -m "Import live Maths Words Lab HTML from Netlify"
+          git push origin HEAD:migrate-maths-words-lab-github-pages
